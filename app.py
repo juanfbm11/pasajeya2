@@ -1,4 +1,3 @@
-
 import os
 from datetime import datetime, timedelta
 from functools import wraps
@@ -75,6 +74,37 @@ def f_precio(valor):
 def vacio_a_none(valor):
     valor = (valor or "").strip()
     return valor or None
+
+
+# ============================================================
+# AYUDAS PARA LA NAVEGACIÓN (REDIRECCIONES)
+# ============================================================
+
+def url_busqueda():
+    """URL de la última búsqueda del pasajero.
+    Sirve para que el botón 'Volver' regrese a los resultados
+    en lugar de a un formulario vacío."""
+    return url_for("home", **(session.get("busqueda") or {}))
+
+
+def destino_seguro(url):
+    """Solo acepta rutas internas ('/admin'), nunca sitios externos.
+    Evita que alguien use ?next=http://sitio-malo.com"""
+    if url and url.startswith("/") and not url.startswith("//"):
+        return url
+    return None
+
+
+@app.context_processor
+def inyectar_ayudas():
+    # Permite usar {{ url_busqueda() }} en cualquier plantilla
+    return {"url_busqueda": url_busqueda}
+
+
+@app.errorhandler(404)
+def pagina_no_encontrada(error):
+    flash("La página que buscas no existe.")
+    return redirect(url_for("home"))
 
 
 # ============================================================
@@ -240,6 +270,18 @@ def home():
     resultados = None
 
     if origen and destino and fecha:
+
+        # Guardar la búsqueda para el botón "Volver" de las demás páginas
+        session["busqueda"] = {
+            clave: valor
+            for clave, valor in (
+                ("origen", origen),
+                ("destino", destino),
+                ("fecha", fecha),
+                ("hora", hora),
+            )
+            if valor
+        }
 
         if origen == destino:
             flash("El origen y el destino deben ser diferentes.")
@@ -553,6 +595,19 @@ def pasajero(id_viaje):
                 "Error al completar la compra"
             )
 
+            texto_error = str(error).lower()
+
+            if "duplicate" in texto_error or "23505" in texto_error:
+
+                flash(
+                    f"El asiento {asiento} acaba de ser comprado por "
+                    "otra persona. Elige otro."
+                )
+
+                return redirect(
+                    url_for("info", id_viaje=id_viaje)
+                )
+
             flash(
                 f"No se pudo completar la compra: {error}"
             )
@@ -638,6 +693,12 @@ def admin_requerido(funcion):
                 "Inicia sesión como administrador para continuar."
             )
 
+            if request.method == "GET":
+                siguiente = request.full_path.rstrip("?")
+                return redirect(
+                    url_for("login", next=siguiente)
+                )
+
             return redirect(
                 url_for("login")
             )
@@ -653,6 +714,9 @@ def admin_requerido(funcion):
 
 @app.route("/registro", methods=["GET", "POST"])
 def registro():
+
+    if session.get("admin_id"):
+        return redirect(url_for("admin"))
 
     if request.method == "POST":
 
@@ -752,6 +816,9 @@ def registro():
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
+    if session.get("admin_id"):
+        return redirect(url_for("admin"))
+
     if request.method == "POST":
 
         try:
@@ -809,8 +876,12 @@ def login():
                     "Bienvenido al panel de administración."
                 )
 
+                siguiente = destino_seguro(
+                    request.values.get("next")
+                )
+
                 return redirect(
-                    url_for("admin")
+                    siguiente or url_for("admin")
                 )
 
         except Exception:
@@ -834,6 +905,8 @@ def login():
 def logout():
 
     session.clear()
+
+    flash("Sesión cerrada correctamente.")
 
     return redirect(
         url_for("login")

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Ticket PasajeYA{% endblock %}
+{% block content %}
+<div class="ticket">
+    {% if nuevo %}
+    <p><strong>¡Pago exitoso!</strong> Su compra ha sido registrada. Gracias por utilizar PasajeYA.</p>
+    {% endif %}
+
+    <h2>PasajeYA</h2>
+    <p><strong>Ticket de Viaje</strong></p>
+    <hr>
+    <p><strong>ID Ticket:</strong> {{ t.id_ticket }}</p>
+    <p><strong>Código de Reserva:</strong> {{ t.codigo_reserva }}</p>
+    <hr>
+    <p><strong>Pasajero:</strong> {{ p.nombre_completo }}</p>
+    <p><strong>Documento:</strong> {{ p.tipo_documento }} {{ p.numero_documento }}</p>
+    <hr>
+    <p><strong>Empresa:</strong> {{ v.empresa.nombre }}</p>
+    <p><strong>Ruta:</strong> {{ v.origen.ciudad }} → {{ v.destino.ciudad }}</p>
+    <p><strong>Terminal salida:</strong> {{ v.origen.nombre }}</p>
+    <p><strong>Fecha:</strong> {{ v.salida|fecha }}</p>
+    <p><strong>Hora de Salida:</strong> {{ v.salida|hora }}</p>
+    <p><strong>Hora de Llegada:</strong> {{ v.llegada|hora if v.llegada else 'No definida' }}</p>
+    <hr>
+    <p><strong>Bus:</strong> {{ v.bus.codigo }} ({{ v.bus.placa }})</p>
+    <p><strong>Asiento:</strong> {{ t.asiento }}</p>
+    <p><strong>Estado:</strong> {{ t.estado|capitalize }}</p>
+    <hr>
+    {% if pago %}
+    <p><strong>Valor Pagado:</strong> {{ pago.monto|precio }} ({{ pago.metodo }})</p>
+    {% endif %}
+
+    <button type="button" onclick="window.print()">Imprimir</button>
+    <a href="{{ url_for('home') }}"><button type="button">Nueva búsqueda</button></a>
+</div>
+{% endblock %}

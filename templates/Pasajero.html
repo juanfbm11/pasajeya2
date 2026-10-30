@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Pasajero{% endblock %}
+{% block content %}
+<div class="contenedor">
+    <h2>Ingresar Datos</h2>
+
+    <p>
+        {{ v.origen.ciudad }} → {{ v.destino.ciudad }} ·
+        {{ v.salida|fecha }} {{ v.salida|hora }} ·
+        Asiento <strong>{{ asiento }}</strong> ·
+        Total <strong>{{ v.precio|precio }}</strong>
+    </p>
+
+    <form method="post" action="{{ url_for('pasajero', id_viaje=v.id_viaje) }}">
+        <input type="hidden" name="asiento" value="{{ asiento }}">
+
+        <label for="txtNombre">Nombre Completo</label>
+        <input type="text" name="txtNombre" id="txtNombre" required>
+
+        <label for="cmbDocumento">Tipo de Documento</label>
+        <select name="cmbDocumento" id="cmbDocumento" required>
+            <option value="">Seleccione una opción</option>
+            <option value="CC">Cédula de Ciudadanía</option>
+            <option value="TI">Tarjeta de Identidad</option>
+            <option value="CE">Cédula de Extranjería</option>
+            <option value="PA">Pasaporte</option>
+        </select>
+
+        <label for="txtDocumento">Número de Documento</label>
+        <input type="text" name="txtDocumento" id="txtDocumento" required>
+
+        <label for="txtCorreo">Correo Electrónico</label>
+        <input type="email" name="txtCorreo" id="txtCorreo" required>
+
+        <label for="txtTel">Teléfono</label>
+        <input type="tel" name="txtTel" id="txtTel" required>
+
+        <label for="txtFecha">Fecha de Nacimiento</label>
+        <input type="date" name="txtFecha" id="txtFecha" required>
+
+        <label for="cmbMetodo">Método de pago</label>
+        <select name="cmbMetodo" id="cmbMetodo" required>
+            <option value="">Seleccione una opción</option>
+            <option value="tarjeta">Tarjeta</option>
+            <option value="pse">PSE</option>
+            <option value="nequi">Nequi</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="otro">Otro</option>
+        </select>
+
+        <button type="submit">Confirmar Compra</button>
+        <button type="reset">Cancelar</button>
+        <a href="{{ url_for('info', id_viaje=v.id_viaje) }}"><button type="button">Volver</button></a>
+    </form>
+</div>
+{% endblock %}

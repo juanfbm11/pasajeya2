@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Detalles del Viaje{% endblock %}
+{% block content %}
+<div class="contenedor">
+    <h2>Información del Viaje</h2>
+
+    <p><strong>Empresa:</strong> {{ v.empresa.nombre }}</p>
+    <p><strong>Ruta:</strong> {{ v.origen.ciudad }} - {{ v.destino.ciudad }}</p>
+    <p><strong>Terminal Salida:</strong> {{ v.origen.nombre }}</p>
+    <p><strong>Terminal Llegada:</strong> {{ v.destino.nombre }}</p>
+    <p><strong>Fecha:</strong> {{ v.salida|fecha }}</p>
+    <p><strong>Hora de Salida:</strong> {{ v.salida|hora }}</p>
+    <p><strong>Hora de Llegada:</strong> {{ v.llegada|hora if v.llegada else 'No definida' }}</p>
+    <p><strong>Bus:</strong> {{ v.bus.codigo }} ({{ v.bus.placa }})</p>
+    <p><strong>Asientos Disponibles:</strong> {{ v.disponibles }}</p>
+    <p><strong>Precio:</strong> {{ v.precio|precio }}</p>
+
+    <p><strong>Asiento elegido:</strong> <span id="textoAsiento">ninguno</span></p>
+    <button type="button" onclick="abrirModal()">Seleccionar Silla</button>
+
+    <br><br>
+
+    <a href="javascript:history.back()"><button type="button">Volver</button></a>
+
+    <form method="get" action="{{ url_for('pasajero', id_viaje=v.id_viaje) }}" style="display:inline">
+        <input type="hidden" name="asiento" id="inputAsiento">
+        <button type="submit" id="btnContinuar" disabled>Registrar Datos</button>
+    </form>
+</div>
+
+<div id="modalSillas" class="modal">
+    <div class="modal-content">
+        <h3>Seleccione su Asiento</h3>
+        <p><strong>CONDUCTOR</strong></p>
+
+        {% for n in asientos %}
+        <button type="button" class="asiento" data-n="{{ n }}"
+                {{ 'disabled' if n in v.ocupados }}>{{ '%02d'|format(n) }}</button>
+        {% if n % 4 == 0 %}<br>{% endif %}
+        {% endfor %}
+
+        <br><br>
+        <button type="button" onclick="confirmarAsiento()">Confirmar Asiento</button>
+        <button type="button" onclick="cerrarModal()">Cerrar</button>
+    </div>
+</div>
+
+<script>
+    let seleccionado = null;
+
+    document.querySelectorAll('.asiento:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.asiento').forEach(b => b.classList.remove('seleccionado'));
+            btn.classList.add('seleccionado');
+            seleccionado = btn.dataset.n;
+        });
+    });
+
+    function abrirModal()  { document.getElementById('modalSillas').style.display = 'block'; }
+    function cerrarModal() { document.getElementById('modalSillas').style.display = 'none'; }
+
+    function confirmarAsiento() {
+        if (!seleccionado) { alert('Elige un asiento primero'); return; }
+        document.getElementById('inputAsiento').value = seleccionado;
+        document.getElementById('textoAsiento').textContent = seleccionado;
+        document.getElementById('btnContinuar').disabled = false;
+        cerrarModal();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PasajeYA{% endblock %}</title>
+    <!-- Solo lo mínimo para que modal y asientos funcionen. El diseño va después. -->
+    <style>
+        .modal { display: none; }
+        .asiento.seleccionado { background: #8f8; }
+        .asiento:disabled { background: #ccc; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('home') }}">Buscar viajes</a> |
+        {% if session.admin_id %}
+            <a href="{{ url_for('admin') }}">Panel admin</a> |
+            <a href="{{ url_for('logout') }}">Salir ({{ session.admin_nombre }})</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Administrador</a>
+        {% endif %}
+    </nav>
+
+    {% with mensajes = get_flashed_messages() %}
+        {% if mensajes %}
+        <ul class="mensajes">
+            {% for m in mensajes %}<li>{{ m }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Registro administrador{% endblock %}
+{% block content %}
+<div class="login">
+    <h2>Registro de administrador</h2>
+
+    <form method="post" action="{{ url_for('registro') }}">
+        <label for="txtNombre">Nombre</label>
+        <input type="text" name="txtNombre" id="txtNombre" required>
+
+        <label for="txtcorreo">Correo</label>
+        <input type="email" name="txtcorreo" id="txtcorreo" required>
+
+        <label for="txtClave">Contraseña (mínimo 8caracteres)</label>
+        <input type="password" name="txtClave" id="txtClave" minlength="8" required>
+
+        {% if pide_codigo %}
+        <label for="txtCodigo">Código de invitación</label>
+        <input type="text" name="txtCodigo" id="txtCodigo" required>
+        {% endif %}
+
+        <button type="submit">Crear cuenta</button>
+    </form>
+
+    <p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a></p>
+</div>
+{% endblock %}

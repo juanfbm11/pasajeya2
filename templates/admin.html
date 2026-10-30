@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Panel administrador{% endblock %}
+{% block content %}
+<div class="contenedor">
+    <h2>Panel de administración</h2>
+    <p>Orden recomendado: empresa → terminales → bus → ruta → viaje.</p>
+
+    <h3>1. Empresa</h3>
+    <form method="post" action="{{ url_for('admin_empresa') }}">
+        <input name="nombre" placeholder="Nombre" required>
+        <input name="nit" placeholder="NIT" required>
+        <button type="submit">Agregar empresa</button>
+    </form>
+    <p>Registradas: {% for e in empresas %}{{ e.nombre }}{{ ', ' if not loop.last }}{% else %}ninguna{% endfor %}</p>
+
+    <h3>2. Terminal</h3>
+    <form method="post" action="{{ url_for('admin_terminal') }}">
+        <input name="ciudad" placeholder="Ciudad" required>
+        <input name="nombre" placeholder="Nombre de la terminal" required>
+        <input name="direccion" placeholder="Dirección (opcional)">
+        <button type="submit">Agregar terminal</button>
+    </form>
+    <p>Registradas:
+        {% for t in terminales %}{{ t.ciudad }} - {{ t.nombre }}{{ '; ' if not loop.last }}{% else %}ninguna{% endfor %}
+    </p>
+
+    <h3>3. Bus</h3>
+    <form method="post" action="{{ url_for('admin_bus') }}">
+        <select name="id_empresa" required>
+            <option value="">Empresa</option>
+            {% for e in empresas %}<option value="{{ e.id_empresa }}">{{ e.nombre }}</option>{% endfor %}
+        </select>
+        <input name="codigo" placeholder="Código" required>
+        <input name="placa" placeholder="Placa" required>
+        <input type="number" name="capacidad" min="1" placeholder="Capacidad" required>
+        <button type="submit">Agregar bus</button>
+    </form>
+    <p>Registrados:
+        {% for b in buses %}{{ b.codigo }} ({{ b.placa }}, {{ b.capacidad }} sillas){{ '; ' if not loop.last }}{% else %}ninguno{% endfor %}
+    </p>
+
+    <h3>4. Ruta</h3>
+    <form method="post" action="{{ url_for('admin_ruta') }}">
+        <select name="id_origen" required>
+            <option value="">Terminal origen</option>
+            {% for t in terminales %}<option value="{{ t.id_terminal }}">{{ t.ciudad }} - {{ t.nombre }}</option>{% endfor %}
+        </select>
+        <select name="id_destino" required>
+            <option value="">Terminal destino</option>
+            {% for t in terminales %}<option value="{{ t.id_terminal }}">{{ t.ciudad }} - {{ t.nombre }}</option>{% endfor %}
+        </select>
+        <input type="number" name="duracion_min" min="1" placeholder="Duración (minutos)">
+        <button type="submit">Agregar ruta</button>
+    </form>
+
+    <h3>5. Programar viaje</h3>
+    <form method="post" action="{{ url_for('admin_viaje') }}">
+        <select name="id_ruta" required>
+            <option value="">Ruta</option>
+            {% for r in rutas %}<option value="{{ r.id_ruta }}">{{ r.label }}</option>{% endfor %}
+        </select>
+        <select name="id_bus" required>
+            <option value="">Bus</option>
+            {% for b in buses if b.activo %}<option value="{{ b.id_bus }}">{{ b.codigo }} ({{ b.placa }})</option>{% endfor %}
+        </select>
+        <input type="datetime-local" name="fecha_salida" required>
+        <input type="number" name="precio" min="0" step="1000" placeholder="Precio" required>
+        <button type="submit">Programar viaje</button>
+    </form>
+
+    <h3>Viajes (últimos 50)</h3>
+    <table border="1" cellpadding="6">
+        <tr><th>ID</th><th>Ruta</th><th>Bus</th><th>Salida</th><th>Precio</th><th>Ocupación</th><th>Estado</th><th>Cambiar</th></tr>
+        {% for v in viajes %}
+        <tr>
+            <td>{{ v.id_viaje }}</td>
+            <td>{{ v.origen.ciudad }} → {{ v.destino.ciudad }}</td>
+            <td>{{ v.bus.codigo }}</td>
+            <td>{{ v.salida|fecha }} {{ v.salida|hora }}</td>
+            <td>{{ v.precio|precio }}</td>
+            <td>{{ v.ocupados|length }}/{{ v.bus.capacidad }}</td>
+            <td>{{ v.estado }}</td>
+            <td>
+                <form method="post" action="{{ url_for('admin_viaje_estado', id_viaje=v.id_viaje) }}">
+                    <select name="estado">
+                        {% for e in ['programado','en_curso','finalizado','cancelado'] %}
+                        <option value="{{ e }}" {{ 'selected' if e == v.estado }}>{{ e }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit">OK</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8">Aún no hay viajes.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

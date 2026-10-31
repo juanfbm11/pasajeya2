@@ -763,23 +763,57 @@ def registro():
 
             try:
 
-                respuesta = nuevo_cliente_auth().auth.sign_up({
-                    "email": correo,
-                    "password": contrasena,
-                })
+                cliente_auth = nuevo_cliente_auth()
 
-                if not respuesta.user:
+                id_admin = None
 
-                    raise Exception(
-                        "Supabase no devolvió el usuario. "
-                        "Verifica la configuración de autenticación."
+                # 1) Intentar crear la cuenta en Supabase Auth.
+                #    Si ya existía (intento anterior que quedó a medias),
+                #    puede lanzar error o devolver un usuario "falso".
+                try:
+                    creada = cliente_auth.auth.sign_up({
+                        "email": correo,
+                        "password": contrasena,
+                    })
+
+                    if creada.user:
+                        id_admin = creada.user.id
+
+                except Exception:
+                    app.logger.info(
+                        "sign_up falló; se verificará con sign_in"
                     )
 
-                supabase.table("administrador").insert({
-                    "id_admin": respuesta.user.id,
-                    "nombre": nombre,
-                    "correo": correo,
-                }).execute()
+                # 2) Verificar con la contraseña y obtener el id REAL.
+                #    Si la cuenta ya existía, esto prueba que es de esta
+                #    persona. Si es nueva y exige confirmar correo, fallará
+                #    y se usa el id del paso 1.
+                try:
+                    verificada = cliente_auth.auth.sign_in_with_password({
+                        "email": correo,
+                        "password": contrasena,
+                    })
+
+                    if verificada.user:
+                        id_admin = verificada.user.id
+
+                except Exception:
+                    if id_admin is None:
+                        raise Exception(
+                            "Ese correo ya está registrado con otra "
+                            "contraseña, o falta confirmar el correo."
+                        )
+
+                # 3) Crear (o completar) la fila en la tabla administrador.
+                #    upsert: si ya existía no da error de duplicado.
+                supabase.table("administrador").upsert(
+                    {
+                        "id_admin": id_admin,
+                        "nombre": nombre,
+                        "correo": correo,
+                    },
+                    on_conflict="id_admin",
+                ).execute()
 
                 flash(
                     "Cuenta creada correctamente. Ahora inicia sesión. "
@@ -859,7 +893,9 @@ def login():
                 nuevo_cliente_auth().auth.sign_out()
 
                 flash(
-                    "La cuenta existe, pero no está registrada como administrador."
+                    "La cuenta existe, pero no está registrada como "
+                    "administrador. Entra a «Regístrate» con el mismo "
+                    "correo y contraseña para activarla."
                 )
 
             else:

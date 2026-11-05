@@ -715,223 +715,80 @@ def admin_requerido(funcion):
 @app.route("/registro", methods=["GET", "POST"])
 def registro():
 
-    if session.get("admin_id"):
-        return redirect(url_for("admin"))
-
     if request.method == "POST":
 
-        nombre = request.form.get(
-            "txtNombre",
-            ""
-        ).strip()
-
-        correo = request.form.get(
-            "txtcorreo",
-            ""
-        ).strip()
-
-        contrasena = request.form.get(
-            "txtClave",
-            ""
-        )
-
-        codigo_invitacion = os.getenv(
-            "ADMIN_INVITE_CODE"
-        )
+        nombre = request.form.get("txtNombre", "").strip()
+        correo = request.form.get("txtcorreo", "").strip()
+        contrasena = request.form.get("txtClave", "")
 
         if not nombre or not correo or not contrasena:
 
-            flash(
-                "Todos los campos obligatorios deben estar completos."
-            )
-
-        elif len(contrasena) < 8:
-
-            flash(
-                "La contraseña debe tener al menos 8 caracteres."
-            )
-
-        elif (
-            codigo_invitacion
-            and request.form.get("txtCodigo")
-            != codigo_invitacion
-        ):
-
-            flash("Código de invitación incorrecto.")
+            flash("Todos los campos son obligatorios.")
 
         else:
 
             try:
 
-                cliente_auth = nuevo_cliente_auth()
+                existe = (
+                    supabase.table("administrador")
+                    .select("*")
+                    .eq("correo", correo)
+                    .execute()
+                    .data
+                )
 
-                id_admin = None
+                if existe:
 
-                # 1) Intentar crear la cuenta en Supabase Auth.
-                #    Si ya existía (intento anterior que quedó a medias),
-                #    puede lanzar error o devolver un usuario "falso".
-                try:
-                    creada = cliente_auth.auth.sign_up({
-                        "email": correo,
-                        "password": contrasena,
-                    })
+                    flash("Ya existe una cuenta con ese correo.")
 
-                    if creada.user:
-                        id_admin = creada.user.id
+                else:
 
-                except Exception:
-                    app.logger.info(
-                        "sign_up falló; se verificará con sign_in"
-                    )
-
-                # 2) Verificar con la contraseña y obtener el id REAL.
-                #    Si la cuenta ya existía, esto prueba que es de esta
-                #    persona. Si es nueva y exige confirmar correo, fallará
-                #    y se usa el id del paso 1.
-                try:
-                    verificada = cliente_auth.auth.sign_in_with_password({
-                        "email": correo,
-                        "password": contrasena,
-                    })
-
-                    if verificada.user:
-                        id_admin = verificada.user.id
-
-                except Exception:
-                    if id_admin is None:
-                        raise Exception(
-                            "Ese correo ya está registrado con otra "
-                            "contraseña, o falta confirmar el correo."
-                        )
-
-                # 3) Crear (o completar) la fila en la tabla administrador.
-                #    upsert: si ya existía no da error de duplicado.
-                supabase.table("administrador").upsert(
-                    {
-                        "id_admin": id_admin,
+                    supabase.table("administrador").insert({
                         "nombre": nombre,
                         "correo": correo,
-                    },
-                    on_conflict="id_admin",
-                ).execute()
+                        "contrasena": contrasena
+                    }).execute()
 
-                flash(
-                    "Cuenta creada correctamente. Ahora inicia sesión. "
-                    "Si Supabase solicita confirmar el correo, "
-                    "revisa tu bandeja de entrada."
-                )
+                    flash("Administrador registrado correctamente.")
 
-                return redirect(
-                    url_for("login")
-                )
+                    return redirect(url_for("login"))
 
-            except Exception as error:
+            except Exception as e:
 
-                app.logger.exception(
-                    "Error al registrar administrador"
-                )
+                flash(f"Error al registrar: {e}")
 
-                flash(
-                    f"No se pudo registrar la cuenta: {error}"
-                )
-
-    return render_template(
-        "registro.html",
-        pide_codigo=bool(
-            os.getenv("ADMIN_INVITE_CODE")
-        ),
-    )
-
-
+    return render_template("registro.html")
 # ============================================================
-# INICIO DE SESIÓN DEL ADMINISTRADOR
+# login
 # ============================================================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
-    if session.get("admin_id"):
-        return redirect(url_for("admin"))
-
     if request.method == "POST":
 
-        try:
+        correo = request.form.get("txtcorreo")
+        contrasena = request.form.get("txtClave")
 
-            respuesta = nuevo_cliente_auth().auth.sign_in_with_password({
-                "email": request.form.get(
-                    "txtcorreo",
-                    ""
-                ).strip(),
+        admin = (
+            supabase.table("administrador")
+            .select("*")
+            .eq("correo", correo)
+            .eq("contrasena", contrasena)
+            .execute()
+            .data
+        )
 
-                "password": request.form.get(
-                    "txtClave",
-                    ""
-                ),
-            })
+        if admin:
 
-            if not respuesta.user:
+            session["admin_id"] = admin[0]["id_admin"]
+            session["admin_nombre"] = admin[0]["nombre"]
 
-                flash(
-                    "No fue posible iniciar sesión. Verifica tus datos."
-                )
+            return redirect(url_for("admin"))
 
-                return render_template("login.html")
+        flash("Correo o contraseña incorrectos.")
 
-            administrador = (
-                supabase.table("administrador")
-                .select("*")
-                .eq(
-                    "id_admin",
-                    respuesta.user.id
-                )
-                .execute()
-                .data
-            )
-
-            if not administrador:
-
-                nuevo_cliente_auth().auth.sign_out()
-
-                flash(
-                    "La cuenta existe, pero no está registrada como "
-                    "administrador. Entra a «Regístrate» con el mismo "
-                    "correo y contraseña para activarla."
-                )
-
-            else:
-
-                session.clear()
-
-                session["admin_id"] = respuesta.user.id
-
-                session["admin_nombre"] = (
-                    administrador[0]["nombre"]
-                )
-
-                flash(
-                    "Bienvenido al panel de administración."
-                )
-
-                siguiente = destino_seguro(
-                    request.values.get("next")
-                )
-
-                return redirect(
-                    siguiente or url_for("admin")
-                )
-
-        except Exception:
-
-            app.logger.exception(
-                "Error al iniciar sesión"
-            )
-
-            flash(
-                "Correo o contraseña incorrectos. Verifica tus datos."
-            )
-
-    return render_template("login.html")
-
+    return render_template("admin.html")
 
 # ============================================================
 # CERRAR SESIÓN

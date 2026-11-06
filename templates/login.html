@@ -1,21 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Login administrador{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
 {% block content %}
-<div class="login">
-    <h2>Bienvenido a PasajeYA</h2>
-    <p>Inicia sesión como administrador para continuar</p>
+<div class="contenedor">
+    <div class="login">
+        <h2>Bienvenido a PasajeYA</h2>
+        <p>Inicia sesión como administrador para continuar</p>
 
-    <form method="post" action="{{ url_for('login') }}">
-        <label for="txtcorreo">Correo</label>
-        <input type="email" name="txtcorreo" id="txtcorreo" required>
+        <form method="post" action="{{ url_for('login') }}">
+            <label for="txtcorreo">Correo</label>
+            <input type="email" name="txtcorreo" id="txtcorreo" required>
 
-        <label for="txtClave">Contraseña</label>
-        <input type="password" name="txtClave" id="txtClave" required>
+            <label for="txtClave">Contraseña</label>
+            <input type="password" name="txtClave" id="txtClave" required>
 
-        <button type="submit">Ingresar</button>
-        <button type="reset">Cancelar</button>
-    </form>
+            <button type="submit">Ingresar</button>
+            <button type="reset">Cancelar</button>
+        </form>
 
-    <p>¿No tienes cuenta? <a href="{{ url_for('registro') }}">Regístrate</a></p>
+        <p>¿No tienes cuenta? <a href="{{ url_for('registro') }}">Regístrate</a></p>
+    </div>
 </div>
+
 {% endblock %}

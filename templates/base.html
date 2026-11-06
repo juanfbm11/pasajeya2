@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}PasajeYA{% endblock %}</title>
     <!-- Solo lo mínimo para que modal y asientos funcionen. El diseño va después. -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    {% block head %}{% endblock %}
+
     <style>
         .modal { display: none; }
         .asiento.seleccionado { background: #8f8; }
@@ -13,9 +17,9 @@
 </head>
 <body>
     <nav>
-        <a href="{{ url_for('home') }}">Buscar viajes</a> |
+        <a href="{{ url_for('home') }}">Buscar viajes</a>
         {% if session.admin_id %}
-            <a href="{{ url_for('admin') }}">Panel admin</a> |
+            <a href="{{ url_for('admin') }}">Panel admin</a>
             <a href="{{ url_for('logout') }}">Salir ({{ session.admin_nombre }})</a>
         {% else %}
             <a href="{{ url_for('login') }}">Administrador</a>

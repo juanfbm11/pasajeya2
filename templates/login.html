@@ -1,21 +1,27 @@
+
+
 {% extends "base.html" %}
+
 {% block title %}Login administrador{% endblock %}
+
 {% block content %}
-<div class="login">
-    <h2>Bienvenido a PasajeYA</h2>
-    <p>Inicia sesión como administrador para continuar</p>
+<link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 
-    <form method="post" action="{{ url_for('login') }}">
-        <label for="txtcorreo">Correo</label>
-        <input type="email" name="txtcorreo" id="txtcorreo" required>
+<main class="login">
+  <h1>Bienvenido a PasajeYA</h1>
+  <p>Inicia sesión como administrador para continuar</p>
 
-        <label for="txtClave">Contraseña</label>
-        <input type="password" name="txtClave" id="txtClave" required>
+  <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}">
+    <label for="txtcorreo">Correo</label>
+    <input type="email" id="txtcorreo" name="txtcorreo" required autocomplete="username">
 
-        <button type="submit">Ingresar</button>
-        <button type="reset">Cancelar</button>
-    </form>
+    <label for="txtClave">Contraseña</label>
+    <input type="password" id="txtClave" name="txtClave" required autocomplete="current-password">
 
-    <p>¿No tienes cuenta? <a href="{{ url_for('registro') }}">Regístrate</a></p>
-</div>
+    <button type="submit">Ingresar</button>
+    <a href="{{ url_for('home') }}">Cancelar</a>
+  </form>
+
+  <p>¿No tienes cuenta? <a href="{{ url_for('registro') }}">Regístrate</a></p>
+</main>
 {% endblock %}

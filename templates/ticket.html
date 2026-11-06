@@ -1,36 +1,46 @@
 {% extends "base.html" %}
-{% block title %}Ticket PasajeYA{% endblock %}
+{% block title %}Tu ticket{% endblock %}
+{% block ancho %}media{% endblock %}
+
 {% block content %}
-<div class="ticket">
-    {% if nuevo %}
-    <p><strong>¡Pago exitoso!</strong> Su compra ha sido registrada. Gracias por utilizar PasajeYA.</p>
-    {% endif %}
+<section class="tarjeta ticket">
+  {% if nuevo %}<div class="exito">¡Compra realizada! Guarda este código para consultar tu ticket.</div>{% endif %}
 
-    <h2>PasajeYA</h2>
-    <p><strong>Ticket de Viaje</strong></p>
-    <hr>
-    <p><strong>ID Ticket:</strong> {{ t.id_ticket }}</p>
-    <p><strong>Código de Reserva:</strong> {{ t.codigo_reserva }}</p>
-    <hr>
-    <p><strong>Pasajero:</strong> {{ p.nombre_completo }}</p>
-    <p><strong>Documento:</strong> {{ p.tipo_documento }} {{ p.numero_documento }}</p>
-    <hr>
-    <p><strong>Empresa:</strong> {{ v.empresa.nombre }}</p>
-    <p><strong>Ruta:</strong> {{ v.origen.ciudad }} → {{ v.destino.ciudad }}</p>
-    <p><strong>Terminal salida:</strong> {{ v.origen.nombre }}</p>
-    <p><strong>Fecha:</strong> {{ v.salida|fecha }}</p>
-    <p><strong>Hora de Salida:</strong> {{ v.salida|hora }}</p>
-    <p><strong>Hora de Llegada:</strong> {{ v.llegada|hora if v.llegada else 'No definida' }}</p>
-    <hr>
-    <p><strong>Bus:</strong> {{ v.bus.codigo }} ({{ v.bus.placa }})</p>
-    <p><strong>Asiento:</strong> {{ t.asiento }}</p>
-    <p><strong>Estado:</strong> {{ t.estado|capitalize }}</p>
-    <hr>
-    {% if pago %}
-    <p><strong>Valor Pagado:</strong> {{ pago.monto|precio }} ({{ pago.metodo }})</p>
-    {% endif %}
+  <h1>Ticket de viaje</h1>
+  <div class="codigo">{{ t.codigo_reserva }}</div>
 
-    <button type="button" onclick="window.print()">Imprimir</button>
-    <a href="{{ url_for('home') }}"><button type="button">Nueva búsqueda</button></a>
-</div>
+  <div class="datos">
+    <div class="dato"><small>Pasajero</small><strong>{{ p.nombre_completo }}</strong></div>
+    <div class="dato"><small>Documento</small><strong>{{ p.tipo_documento }} {{ p.numero_documento }}</strong></div>
+    <div class="dato"><small>Asiento</small><strong>{{ t.asiento }}</strong></div>
+    <div class="dato"><small>Estado</small><span class="tag {{ t.estado }}">{{ t.estado }}</span></div>
+  </div>
+
+  <hr>
+
+  <div class="datos">
+    <div class="dato"><small>Empresa</small><strong>{{ v.empresa.nombre }}</strong></div>
+    <div class="dato"><small>Ruta</small><strong>{{ v.origen.ciudad }} → {{ v.destino.ciudad }}</strong></div>
+    <div class="dato"><small>Terminal de salida</small><strong>{{ v.origen.nombre }}</strong></div>
+    <div class="dato"><small>Terminal de llegada</small><strong>{{ v.destino.nombre }}</strong></div>
+    <div class="dato"><small>Fecha</small><strong>{{ v.salida|fecha }}</strong></div>
+    <div class="dato"><small>Salida</small><strong>{{ v.salida|hora }}</strong></div>
+    <div class="dato"><small>Llegada</small><strong>{{ v.llegada|hora if v.llegada else '—' }}</strong></div>
+    <div class="dato"><small>Bus</small><strong>{{ v.bus.codigo }} · {{ v.bus.placa }}</strong></div>
+  </div>
+
+  {% if pago %}
+  <hr>
+  <div class="datos">
+    <div class="dato"><small>Total pagado</small><strong>{{ pago.monto|precio }}</strong></div>
+    <div class="dato"><small>Método</small><strong>{{ pago.metodo }}</strong></div>
+    <div class="dato"><small>Referencia</small><strong>{{ pago.referencia }}</strong></div>
+  </div>
+  {% endif %}
+
+  <div class="acciones">
+    <a class="btn secundario" href="{{ url_for('home') }}">Inicio</a>
+    <button class="btn" onclick="window.print()">Imprimir</button>
+  </div>
+</section>
 {% endblock %}

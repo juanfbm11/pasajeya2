@@ -1,13 +1,9 @@
-
-
 {% extends "base.html" %}
-
 {% block title %}Registro administrador{% endblock %}
+{% block ancho %}angosta{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
-
-<main class="login">
+<section class="tarjeta">
   <h1>Registro de administrador</h1>
 
   <form method="POST" action="{{ url_for('registro') }}">
@@ -23,9 +19,8 @@
     <label for="txtCodigo">Código de autorización</label>
     <input type="password" id="txtCodigo" name="txtCodigo" required>
 
-    <button type="submit">Crear cuenta</button>
+    <button type="submit" class="btn">Crear cuenta</button>
   </form>
-
   <p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a></p>
-</main>
+</section>
 {% endblock %}

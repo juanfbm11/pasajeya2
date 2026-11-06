@@ -1,15 +1,11 @@
-
-
 {% extends "base.html" %}
-
 {% block title %}Login administrador{% endblock %}
+{% block ancho %}angosta{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
-
-<main class="login">
+<section class="tarjeta">
   <h1>Bienvenido a PasajeYA</h1>
-  <p>Inicia sesión como administrador para continuar</p>
+  <p class="subtitulo">Inicia sesión como administrador para continuar.</p>
 
   <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}">
     <label for="txtcorreo">Correo</label>
@@ -18,10 +14,11 @@
     <label for="txtClave">Contraseña</label>
     <input type="password" id="txtClave" name="txtClave" required autocomplete="current-password">
 
-    <button type="submit">Ingresar</button>
-    <a href="{{ url_for('home') }}">Cancelar</a>
+    <div class="acciones">
+      <button type="submit" class="btn">Ingresar</button>
+      <a class="btn secundario" href="{{ url_for('home') }}">Cancelar</a>
+    </div>
   </form>
-
   <p>¿No tienes cuenta? <a href="{{ url_for('registro') }}">Regístrate</a></p>
-</main>
+</section>
 {% endblock %}

@@ -1,56 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Pasajero{% endblock %}
+{% block title %}Datos del pasajero{% endblock %}
+{% block ancho %}media{% endblock %}
+
 {% block content %}
-<div class="contenedor">
-    <h2>Ingresar Datos</h2>
+<section class="tarjeta">
+  <h1>Datos del pasajero</h1>
+  <p class="subtitulo">
+    {{ v.origen.ciudad }} → {{ v.destino.ciudad }} · {{ v.salida|fecha }} {{ v.salida|hora }}
+    · Asiento <strong>{{ asiento }}</strong> · {{ v.precio|precio }}
+  </p>
 
-    <p>
-        {{ v.origen.ciudad }} → {{ v.destino.ciudad }} ·
-        {{ v.salida|fecha }} {{ v.salida|hora }} ·
-        Asiento <strong>{{ asiento }}</strong> ·
-        Total <strong>{{ v.precio|precio }}</strong>
-    </p>
+  <form method="POST" action="{{ url_for('pasajero', id_viaje=v.id_viaje) }}">
+    <input type="hidden" name="asiento" value="{{ asiento }}">
 
-    <form method="post" action="{{ url_for('pasajero', id_viaje=v.id_viaje) }}">
-        <input type="hidden" name="asiento" value="{{ asiento }}">
+    <label for="txtNombre">Nombre completo</label>
+    <input type="text" id="txtNombre" name="txtNombre" required>
 
-        <label for="txtNombre">Nombre Completo</label>
-        <input type="text" name="txtNombre" id="txtNombre" required>
-
-        <label for="cmbDocumento">Tipo de Documento</label>
-        <select name="cmbDocumento" id="cmbDocumento" required>
-            <option value="">Seleccione una opción</option>
-            <option value="CC">Cédula de Ciudadanía</option>
-            <option value="TI">Tarjeta de Identidad</option>
-            <option value="CE">Cédula de Extranjería</option>
-            <option value="PA">Pasaporte</option>
+    <div class="fila">
+      <div>
+        <label for="cmbDocumento">Tipo de documento</label>
+        <select id="cmbDocumento" name="cmbDocumento" required>
+          <option value="CC">Cédula de ciudadanía</option>
+          <option value="TI">Tarjeta de identidad</option>
+          <option value="CE">Cédula de extranjería</option>
+          <option value="PA">Pasaporte</option>
         </select>
+      </div>
+      <div>
+        <label for="txtDocumento">Número de documento</label>
+        <input type="text" id="txtDocumento" name="txtDocumento" required>
+      </div>
+    </div>
 
-        <label for="txtDocumento">Número de Documento</label>
-        <input type="text" name="txtDocumento" id="txtDocumento" required>
+    <div class="fila">
+      <div>
+        <label for="txtCorreo">Correo (opcional)</label>
+        <input type="email" id="txtCorreo" name="txtCorreo">
+      </div>
+      <div>
+        <label for="txtTel">Teléfono (opcional)</label>
+        <input type="tel" id="txtTel" name="txtTel">
+      </div>
+      <div>
+        <label for="txtFecha">Fecha de nacimiento (opcional)</label>
+        <input type="date" id="txtFecha" name="txtFecha">
+      </div>
+    </div>
 
-        <label for="txtCorreo">Correo Electrónico</label>
-        <input type="email" name="txtCorreo" id="txtCorreo" required>
+    <label for="cmbMetodo">Método de pago</label>
+    <select id="cmbMetodo" name="cmbMetodo" required>
+      <option value="tarjeta">Tarjeta</option>
+      <option value="pse">PSE</option>
+      <option value="efectivo">Efectivo</option>
+    </select>
 
-        <label for="txtTel">Teléfono</label>
-        <input type="tel" name="txtTel" id="txtTel" required>
-
-        <label for="txtFecha">Fecha de Nacimiento</label>
-        <input type="date" name="txtFecha" id="txtFecha" required>
-
-        <label for="cmbMetodo">Método de pago</label>
-        <select name="cmbMetodo" id="cmbMetodo" required>
-            <option value="">Seleccione una opción</option>
-            <option value="tarjeta">Tarjeta</option>
-            <option value="pse">PSE</option>
-            <option value="nequi">Nequi</option>
-            <option value="efectivo">Efectivo</option>
-            <option value="otro">Otro</option>
-        </select>
-
-        <button type="submit">Confirmar Compra</button>
-        <button type="reset">Cancelar</button>
-        <a href="{{ url_for('info', id_viaje=v.id_viaje) }}"><button type="button">Volver</button></a>
-    </form>
-</div>
+    <div class="acciones">
+      <a class="btn secundario" href="{{ url_for('info', id_viaje=v.id_viaje) }}">Cambiar asiento</a>
+      <button type="submit" class="btn">Pagar {{ v.precio|precio }}</button>
+    </div>
+  </form>
+</section>
 {% endblock %}

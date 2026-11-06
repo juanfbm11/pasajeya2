@@ -1,48 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}PasajeYA{% endblock %}</title>
-  <style>
-    body { margin:0; font-family: Arial, sans-serif; background:#f4f6f8; }
-    .menu { display:flex; align-items:center; justify-content:space-between;
-            background:#0b3d91; padding:12px 24px; }
-    .menu a, .menu button { color:#fff; text-decoration:none; margin-left:16px; }
-    .menu .marca { font-weight:bold; font-size:1.2rem; margin-left:0; }
-    .menu .activo { border-bottom:2px solid #fff; }
-    .btn-logout { background:#c0392b; border:none; padding:8px 14px;
-                  border-radius:6px; cursor:pointer; }
-    .flash { background:#fff3cd; padding:10px 24px; border-bottom:1px solid #e0c97a; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
 </head>
 <body>
   <nav class="menu">
-    <a class="marca" href="{{ url_for('home') }}">PasajeYA</a>
-
-    <div>
-      <a href="{{ url_for('home') }}"
-         class="{{ 'activo' if request.endpoint == 'home' }}">Buscar viaje</a>
-
+    <a class="marca" href="{{ url_for('home') }}">Pasaje<span>YA</span></a>
+    <div class="enlaces">
+      <a href="{{ url_for('home') }}" class="{{ 'activo' if request.endpoint == 'home' }}">Buscar viaje</a>
       {% if session.get('admin_id') %}
-        <a href="{{ url_for('admin') }}"
-           class="{{ 'activo' if request.endpoint == 'admin' }}">Panel admin</a>
-        <form method="POST" action="{{ url_for('logout') }}" style="display:inline;">
-          <button type="submit" class="btn-logout">Cerrar sesión ({{ session.get('admin_nombre') }})</button>
+        <a href="{{ url_for('admin') }}" class="{{ 'activo' if request.endpoint == 'admin' }}">Panel admin</a>
+        <form method="POST" action="{{ url_for('logout') }}">
+          <button type="submit" class="btn peligro chico">Cerrar sesión ({{ session.get('admin_nombre') }})</button>
         </form>
       {% else %}
-        <a href="{{ url_for('login') }}">Acceso administrador</a>
+        <a href="{{ url_for('login') }}" class="{{ 'activo' if request.endpoint == 'login' }}">Acceso administrador</a>
       {% endif %}
     </div>
   </nav>
 
-  {% with mensajes = get_flashed_messages() %}
-    {% for m in mensajes %}
-      <div class="flash">{{ m }}</div>
-    {% endfor %}
-  {% endwith %}
+  {% for m in get_flashed_messages() %}
+    <div class="mensaje">{{ m }}</div>
+  {% endfor %}
 
-  {% block content %}{% endblock %}
+  <main class="pagina {% block ancho %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>

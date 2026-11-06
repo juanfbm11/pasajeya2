@@ -1,99 +1,125 @@
 {% extends "base.html" %}
 {% block title %}Panel administrador{% endblock %}
+
 {% block content %}
-<div class="contenedor">
-    <h2>Panel de administración</h2>
-    <p>Orden recomendado: empresa → terminales → bus → ruta → viaje.</p>
+<section class="tarjeta">
+  <h1>Panel de administración</h1>
+  <p class="subtitulo">Orden recomendado: empresa → terminales → bus → ruta → viaje.</p>
+</section>
 
-    <h3>1. Empresa</h3>
-    <form method="post" action="{{ url_for('admin_empresa') }}">
-        <input name="nombre" placeholder="Nombre" required>
-        <input name="nit" placeholder="NIT" required>
-        <button type="submit">Agregar empresa</button>
+<div class="grid-admin">
+  <section class="tarjeta">
+    <h2>1. Empresa</h2>
+    <form method="POST" action="{{ url_for('admin_empresa') }}">
+      <label>Nombre</label><input type="text" name="nombre" required>
+      <label>NIT</label><input type="text" name="nit" required>
+      <button class="btn" type="submit">Agregar empresa</button>
     </form>
-    <p>Registradas: {% for e in empresas %}{{ e.nombre }}{{ ', ' if not loop.last }}{% else %}ninguna{% endfor %}</p>
-
-    <h3>2. Terminal</h3>
-    <form method="post" action="{{ url_for('admin_terminal') }}">
-        <input name="ciudad" placeholder="Ciudad" required>
-        <input name="nombre" placeholder="Nombre de la terminal" required>
-        <input name="direccion" placeholder="Dirección (opcional)">
-        <button type="submit">Agregar terminal</button>
-    </form>
-    <p>Registradas:
-        {% for t in terminales %}{{ t.ciudad }} - {{ t.nombre }}{{ '; ' if not loop.last }}{% else %}ninguna{% endfor %}
+    <p class="lista-chica"><strong>Registradas:</strong>
+      {% for e in empresas %}{{ e.nombre }}{% if not loop.last %}, {% endif %}{% else %}ninguna{% endfor %}
     </p>
+  </section>
 
-    <h3>3. Bus</h3>
-    <form method="post" action="{{ url_for('admin_bus') }}">
-        <select name="id_empresa" required>
-            <option value="">Empresa</option>
-            {% for e in empresas %}<option value="{{ e.id_empresa }}">{{ e.nombre }}</option>{% endfor %}
-        </select>
-        <input name="codigo" placeholder="Código" required>
-        <input name="placa" placeholder="Placa" required>
-        <input type="number" name="capacidad" min="1" placeholder="Capacidad" required>
-        <button type="submit">Agregar bus</button>
+  <section class="tarjeta">
+    <h2>2. Terminal</h2>
+    <form method="POST" action="{{ url_for('admin_terminal') }}">
+      <label>Ciudad</label><input type="text" name="ciudad" required>
+      <label>Nombre</label><input type="text" name="nombre" required>
+      <label>Dirección (opcional)</label><input type="text" name="direccion">
+      <button class="btn" type="submit">Agregar terminal</button>
     </form>
-    <p>Registrados:
-        {% for b in buses %}{{ b.codigo }} ({{ b.placa }}, {{ b.capacidad }} sillas){{ '; ' if not loop.last }}{% else %}ninguno{% endfor %}
+    <p class="lista-chica"><strong>Registradas:</strong>
+      {% for t in terminales %}{{ t.ciudad }} - {{ t.nombre }}{% if not loop.last %}, {% endif %}{% else %}ninguna{% endfor %}
     </p>
+  </section>
 
-    <h3>4. Ruta</h3>
-    <form method="post" action="{{ url_for('admin_ruta') }}">
-        <select name="id_origen" required>
-            <option value="">Terminal origen</option>
-            {% for t in terminales %}<option value="{{ t.id_terminal }}">{{ t.ciudad }} - {{ t.nombre }}</option>{% endfor %}
-        </select>
-        <select name="id_destino" required>
-            <option value="">Terminal destino</option>
-            {% for t in terminales %}<option value="{{ t.id_terminal }}">{{ t.ciudad }} - {{ t.nombre }}</option>{% endfor %}
-        </select>
-        <input type="number" name="duracion_min" min="1" placeholder="Duración (minutos)">
-        <button type="submit">Agregar ruta</button>
+  <section class="tarjeta">
+    <h2>3. Bus</h2>
+    <form method="POST" action="{{ url_for('admin_bus') }}">
+      <label>Empresa</label>
+      <select name="id_empresa" required>
+        {% for e in empresas %}<option value="{{ e.id_empresa }}">{{ e.nombre }}</option>{% endfor %}
+      </select>
+      <label>Código</label><input type="text" name="codigo" required>
+      <label>Placa</label><input type="text" name="placa" required>
+      <label>Capacidad</label><input type="number" name="capacidad" min="1" required>
+      <button class="btn" type="submit">Agregar bus</button>
     </form>
+    <p class="lista-chica"><strong>Registrados:</strong>
+      {% for b in buses %}{{ b.codigo }} ({{ b.placa }}, {{ b.capacidad }} sillas){% if not loop.last %}, {% endif %}{% else %}ninguno{% endfor %}
+    </p>
+  </section>
 
-    <h3>5. Programar viaje</h3>
-    <form method="post" action="{{ url_for('admin_viaje') }}">
-        <select name="id_ruta" required>
-            <option value="">Ruta</option>
-            {% for r in rutas %}<option value="{{ r.id_ruta }}">{{ r.label }}</option>{% endfor %}
-        </select>
-        <select name="id_bus" required>
-            <option value="">Bus</option>
-            {% for b in buses if b.activo %}<option value="{{ b.id_bus }}">{{ b.codigo }} ({{ b.placa }})</option>{% endfor %}
-        </select>
-        <input type="datetime-local" name="fecha_salida" required>
-        <input type="number" name="precio" min="0" step="1000" placeholder="Precio" required>
-        <button type="submit">Programar viaje</button>
+  <section class="tarjeta">
+    <h2>4. Ruta</h2>
+    <form method="POST" action="{{ url_for('admin_ruta') }}">
+      <label>Terminal origen</label>
+      <select name="id_origen" required>
+        {% for t in terminales %}<option value="{{ t.id_terminal }}">{{ t.ciudad }} - {{ t.nombre }}</option>{% endfor %}
+      </select>
+      <label>Terminal destino</label>
+      <select name="id_destino" required>
+        {% for t in terminales %}<option value="{{ t.id_terminal }}">{{ t.ciudad }} - {{ t.nombre }}</option>{% endfor %}
+      </select>
+      <label>Duración en minutos (opcional)</label>
+      <input type="number" name="duracion_min" min="1">
+      <button class="btn" type="submit">Agregar ruta</button>
     </form>
+  </section>
 
-    <h3>Viajes (últimos 50)</h3>
-    <table border="1" cellpadding="6">
+  <section class="tarjeta">
+    <h2>5. Programar viaje</h2>
+    <form method="POST" action="{{ url_for('admin_viaje') }}">
+      <label>Ruta</label>
+      <select name="id_ruta" required>
+        {% for r in rutas %}<option value="{{ r.id_ruta }}">{{ r.label }}</option>{% endfor %}
+      </select>
+      <label>Bus</label>
+      <select name="id_bus" required>
+        {% for b in buses %}{% if b.activo %}<option value="{{ b.id_bus }}">{{ b.codigo }} - {{ b.placa }}</option>{% endif %}{% endfor %}
+      </select>
+      <label>Fecha y hora de salida</label>
+      <input type="datetime-local" name="fecha_salida" required>
+      <label>Precio</label>
+      <input type="number" name="precio" min="0" step="100" required>
+      <button class="btn" type="submit">Programar viaje</button>
+    </form>
+  </section>
+</div>
+
+<section class="tarjeta" style="margin-top:22px">
+  <h2>Viajes (últimos 50)</h2>
+  <div class="tabla-wrap">
+    <table class="tabla">
+      <thead>
         <tr><th>ID</th><th>Ruta</th><th>Bus</th><th>Salida</th><th>Precio</th><th>Ocupación</th><th>Estado</th><th>Cambiar</th></tr>
+      </thead>
+      <tbody>
         {% for v in viajes %}
         <tr>
-            <td>{{ v.id_viaje }}</td>
-            <td>{{ v.origen.ciudad }} → {{ v.destino.ciudad }}</td>
-            <td>{{ v.bus.codigo }}</td>
-            <td>{{ v.salida|fecha }} {{ v.salida|hora }}</td>
-            <td>{{ v.precio|precio }}</td>
-            <td>{{ v.ocupados|length }}/{{ v.bus.capacidad }}</td>
-            <td>{{ v.estado }}</td>
-            <td>
-                <form method="post" action="{{ url_for('admin_viaje_estado', id_viaje=v.id_viaje) }}">
-                    <select name="estado">
-                        {% for e in ['programado','en_curso','finalizado','cancelado'] %}
-                        <option value="{{ e }}" {{ 'selected' if e == v.estado }}>{{ e }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit">OK</button>
-                </form>
-            </td>
+          <td>{{ v.id_viaje }}</td>
+          <td>{{ v.origen.ciudad }} → {{ v.destino.ciudad }}</td>
+          <td>{{ v.bus.codigo }}</td>
+          <td>{{ v.salida|fecha }} {{ v.salida|hora }}</td>
+          <td>{{ v.precio|precio }}</td>
+          <td>{{ v.ocupados|length }}/{{ v.bus.capacidad }}</td>
+          <td><span class="tag {{ v.estado }}">{{ v.estado }}</span></td>
+          <td>
+            <form class="estado-form" method="POST" action="{{ url_for('admin_viaje_estado', id_viaje=v.id_viaje) }}">
+              <select name="estado">
+                {% for e in ['programado','en_curso','finalizado','cancelado'] %}
+                  <option value="{{ e }}" {{ 'selected' if e == v.estado }}>{{ e }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn chico" type="submit">OK</button>
+            </form>
+          </td>
         </tr>
         {% else %}
         <tr><td colspan="8">Aún no hay viajes.</td></tr>
         {% endfor %}
+      </tbody>
     </table>
-</div>
+  </div>
+</section>
 {% endblock %}

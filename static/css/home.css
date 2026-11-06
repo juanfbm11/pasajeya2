@@ -1,22 +1,46 @@
-   body{
-            font-family: Arial, sans-serif;
-            background-color: white;
-            color: black;
+body{
+
+            background-image: url("https://i.pinimg.com/1200x/5d/fd/68/5dfd68e9e0686b605553d0474d8ba9f4.jpg");
+            background-size: cover;       /* cubre todo el espacio */
+            background-position: center;  /* centrada */
+            background-repeat: no-repeat; /* sin repetirse */
+            background-attachment: fixed; /* opcional: no se mueve al hacer scroll */
+
+            font-family:'Franklin Gothic Medium';
+            /*background-color: white;*/
+            color: rgb(249, 198, 47);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            
         }
 
+    div {
+        width: 300px;
+        border: 15px solid rgba(0, 79, 128, 0.564);
+        padding: 50px;
+        margin: 20px;
+    }
+
         .contenedor{
-            width: 400px;
-            border: 1px solid black;
-            padding: 20px;
+            align-content: center;
+            width: 800px;
+            border: 10px solid rgba(15, 59, 126, 0.627);
+            padding: 40px;
+            /*border-radius:5%;*/
+            background-color: rgba(131, 181, 255, 0.299); /* Fondo negro con 50% de transparencia */
+
+            
         }
 
         h2{
             text-align: center;
+            font-family: 'Franklin Gothic Medium', Arial;
+            
         }
+
+        
 
         label{
             display: block;
@@ -31,7 +55,78 @@
             box-sizing: border-box;
         }
 
+        
         button{
             margin-top: 15px;
-            padding: 8px;
+            padding: 10px;
+            color: rgb(200, 140, 62);
+
+            
         }
+
+        button:hover{
+            color:rgb(38, 52, 255); 
+            transform: scale(1.05);
+        }
+
+        /* Barra superior centrada */
+        nav {
+            display: flex;
+            justify-content: center;   /* centra horizontalmente */
+            gap: 12px;                 /* espacio entre enlaces */
+            padding: 16px;
+        }
+
+        /* Enlaces con apariencia de botón */
+        nav a {
+            padding: 10px 20px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        nav a:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        /* El cuadro del formulario, centrado */
+        .contenedor {
+            max-width: 500px;          /* ancho máximo del cuadro */
+            margin: 20px auto;         /* auto a los lados = centrado */
+            padding: 24px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        /* Para que cada campo ocupe su propia línea dentro del cuadro */
+        .contenedor label,
+        .contenedor select,
+        .contenedor input {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;    /* el padding no agranda el ancho */
+            margin-bottom: 12px;
+        }
+
+    nav {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        display: flex;
+        gap: 10px;
+}
+
+    nav a {
+        background: rgba(255, 255, 255, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 10px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+
+    nav a:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }

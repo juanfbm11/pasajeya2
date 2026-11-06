@@ -1,63 +1,80 @@
 {% extends "base.html" %}
-{% block title %}Buscar Viaje{% endblock %}
+{% block title %}Buscar viaje{% endblock %}
+
 {% block content %}
-<div class="contenedor">
-    <h2>Buscar Destino</h2>
+<section class="tarjeta">
+  <h1>Buscar viaje</h1>
+  <p class="subtitulo">Elige tu ruta y la fecha de salida.</p>
 
-    <form method="get" action="{{ url_for('home') }}">
+  <form method="GET" action="{{ url_for('home') }}">
+    <div class="fila">
+      <div>
         <label for="origen">Origen</label>
-        <select name="origen" id="origen" required>
-            <option value="">Seleccione una ciudad</option>
-            {% for c in ciudades %}
+        <select id="origen" name="origen" required>
+          <option value="">Seleccione una ciudad</option>
+          {% for c in ciudades %}
             <option value="{{ c }}" {{ 'selected' if c == origen }}>{{ c }}</option>
-            {% endfor %}
+          {% endfor %}
         </select>
-
+      </div>
+      <div>
         <label for="destino">Destino</label>
-        <select name="destino" id="destino" required>
-            <option value="">Seleccione una ciudad</option>
-            {% for c in ciudades %}
+        <select id="destino" name="destino" required>
+          <option value="">Seleccione una ciudad</option>
+          {% for c in ciudades %}
             <option value="{{ c }}" {{ 'selected' if c == destino }}>{{ c }}</option>
-            {% endfor %}
+          {% endfor %}
         </select>
-
-        <label for="fecha">Fecha de Salida</label>
-        <input type="date" name="fecha" id="fecha" value="{{ fecha }}" required>
-
+      </div>
+      <div>
+        <label for="fecha">Fecha de salida</label>
+        <input type="date" id="fecha" name="fecha" value="{{ fecha }}" required>
+      </div>
+      <div>
         <label for="hora">Salir desde (opcional)</label>
-        <input type="time" name="hora" id="hora" value="{{ hora }}">
+        <input type="time" id="hora" name="hora" value="{{ hora }}">
+      </div>
+    </div>
+    <div class="acciones">
+      <button type="submit" class="btn">Buscar viaje</button>
+      <a class="btn secundario" href="{{ url_for('home') }}">Limpiar</a>
+    </div>
+  </form>
+</section>
 
-        <button type="submit">Buscar Viaje</button>
-        <a href="{{ url_for('home') }}"><button type="button">Cancelar</button></a>
-    </form>
-
-    {% if resultados is not none %}
-    <h3>Resultados</h3>
-    {% if resultados %}
-    <table border="1" cellpadding="6">
-        <tr>
-            <th>Empresa</th><th>Ruta</th><th>Salida</th><th>Llegada</th>
-            <th>Disponibles</th><th>Precio</th><th></th>
-        </tr>
+{% if resultados is not none %}
+<section class="tarjeta">
+  <h2>Resultados</h2>
+  {% if resultados %}
+  <div class="tabla-wrap">
+    <table class="tabla">
+      <thead>
+        <tr><th>Empresa</th><th>Ruta</th><th>Salida</th><th>Llegada</th><th>Disponibles</th><th>Precio</th><th></th></tr>
+      </thead>
+      <tbody>
         {% for v in resultados %}
         <tr>
-            <td>{{ v.empresa.nombre }}</td>
-            <td>{{ v.origen.ciudad }} → {{ v.destino.ciudad }}</td>
-            <td>{{ v.salida|hora }}</td>
-            <td>{{ v.llegada|hora if v.llegada else '—' }}</td>
-            <td>{{ v.disponibles }}</td>
-            <td>{{ v.precio|precio }}</td>
-            <td>
-                {% if v.disponibles > 0 %}
-                <a href="{{ url_for('info', id_viaje=v.id_viaje) }}">Ver detalle</a>
-                {% else %}Agotado{% endif %}
-            </td>
+          <td>{{ v.empresa.nombre }}</td>
+          <td>{{ v.origen.ciudad }} → {{ v.destino.ciudad }}</td>
+          <td>{{ v.salida|hora }}</td>
+          <td>{{ v.llegada|hora if v.llegada else '—' }}</td>
+          <td>{{ v.disponibles }}</td>
+          <td><strong>{{ v.precio|precio }}</strong></td>
+          <td>
+            {% if v.disponibles > 0 %}
+              <a class="btn chico" href="{{ url_for('info', id_viaje=v.id_viaje) }}">Ver detalle</a>
+            {% else %}
+              <span class="btn chico deshabilitado">Agotado</span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
+      </tbody>
     </table>
-    {% else %}
+  </div>
+  {% else %}
     <p>No hay viajes programados para esa búsqueda.</p>
-    {% endif %}
-    {% endif %}
-</div>
+  {% endif %}
+</section>
+{% endif %}
 {% endblock %}

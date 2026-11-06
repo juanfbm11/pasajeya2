@@ -1,4 +1,62 @@
-body{
+/* login.css
+Se carga DESPUÉS de home.css, así que solo define lo que cambia.
+   Fondo, fuente, colores, nav, inputs y botones vienen de home.css. */
+
+/* La caja exterior: mismo estilo que en home, pero más angosta */
+.contenedor {
+    width: 100%;
+    max-width: 380px;
+    margin: 20px auto;
+    padding: 30px;
+    box-sizing: border-box;
+    border: 10px solid rgba(15, 59, 126, 0.627);
+    border-radius: 8px;
+    background-color: rgba(131, 181, 255, 0.299);
+}
+
+/* Anula la regla global "div" de home.css para el div interior,
+   así deja de dibujar una segunda caja dentro de la primera */
+.login {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* El formulario no necesita estilo propio */
+.login form {
+    display: block;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.login h2 {
+    margin-top: 0;
+}
+
+.login p {
+    margin: 12px 0;
+}
+
+/* Botones lado a lado */
+.login button {
+    margin-right: 8px;
+}
+
+/* "Regístrate" legible en vez del azul por defecto */
+.login p a {
+    color: #fbbf24;
+    text-decoration: underline;
+}
+
+.login p a:hover {
+    color: #fff;
+}
+
+
+/* body{
         font-family: Arial, sans-serif;
         display: flex;
         justify-content: center;
@@ -23,4 +81,4 @@ body{
     button{
         padding: 10px;
         margin-top: 5px;
-    }
+    } */

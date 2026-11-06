@@ -16,6 +16,7 @@ from flask import (
 )
 
 from services.supabase_client import supabase, nuevo_cliente_auth
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # ============================================================
@@ -26,6 +27,8 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 if not app.secret_key:
     raise RuntimeError(
@@ -708,102 +711,203 @@ def admin_requerido(funcion):
     return interno
 
 
+# # ============================================================
+# # REGISTRO DEL ADMINISTRADOR
+# # ============================================================
+
+# @app.route("/registro", methods=["GET", "POST"])
+# def registro():
+
+#     if request.method == "POST":
+
+#         nombre = request.form.get("txtNombre", "").strip()
+#         correo = request.form.get("txtcorreo", "").strip()
+#         contrasena = request.form.get("txtClave", "")
+
+#         if not nombre or not correo or not contrasena:
+
+#             flash("Todos los campos son obligatorios.")
+
+#         else:
+
+#             try:
+
+#                 existe = (
+#                     supabase.table("administrador")
+#                     .select("*")
+#                     .eq("correo", correo)
+#                     .execute()
+#                     .data
+#                 )
+
+#                 if existe:
+
+#                     flash("Ya existe una cuenta con ese correo.")
+
+#                 else:
+
+#                     supabase.table("administrador").insert({
+#                         "nombre": nombre,
+#                         "correo": correo,
+#                         "contrasena": contrasena
+#                     }).execute()
+
+#                     flash("Administrador registrado correctamente.")
+
+#                     return redirect(url_for("login"))
+
+#             except Exception as e:
+
+#                 flash(f"Error al registrar: {e}")
+
+#     return render_template("registro.html")
+# # ============================================================
+# # login
+# # ============================================================
+
+# @app.route("/login", methods=["GET", "POST"])
+# def login():
+
+#     if request.method == "POST":
+
+#         correo = request.form.get("txtcorreo")
+#         contrasena = request.form.get("txtClave")
+
+#         admin = (
+#             supabase.table("administrador")
+#             .select("*")
+#             .eq("correo", correo)
+#             .eq("contrasena", contrasena)
+#             .execute()
+#             .data
+#         )
+
+#         if admin:
+
+#             session["admin_id"] = admin[0]["id_admin"]
+#             session["admin_nombre"] = admin[0]["nombre"]
+
+#             return redirect(url_for("admin"))
+
+#         flash("Correo o contraseña incorrectos.")
+
+#     return render_template("admin.html")
+
 # ============================================================
 # REGISTRO DEL ADMINISTRADOR
 # ============================================================
 
 @app.route("/registro", methods=["GET", "POST"])
 def registro():
+    if session.get("admin_id"):
+        return redirect(url_for("admin"))
 
     if request.method == "POST":
-
         nombre = request.form.get("txtNombre", "").strip()
-        correo = request.form.get("txtcorreo", "").strip()
+        correo = request.form.get("txtcorreo", "").strip().lower()
         contrasena = request.form.get("txtClave", "")
+        codigo = request.form.get("txtCodigo", "").strip()
+
+        codigo_esperado = os.getenv("ADMIN_INVITE_CODE")
 
         if not nombre or not correo or not contrasena:
-
             flash("Todos los campos son obligatorios.")
-
+        elif "@" not in correo or "." not in correo.split("@")[-1]:
+            flash("Ingresa un correo válido.")
+        elif len(contrasena) < 8:
+            flash("La contraseña debe tener mínimo 8 caracteres.")
+        elif not codigo_esperado or codigo != codigo_esperado:
+            flash("Código de autorización inválido.")
         else:
-
             try:
-
                 existe = (
                     supabase.table("administrador")
-                    .select("*")
+                    .select("id_admin")
                     .eq("correo", correo)
                     .execute()
                     .data
                 )
 
                 if existe:
-
                     flash("Ya existe una cuenta con ese correo.")
-
                 else:
-
                     supabase.table("administrador").insert({
                         "nombre": nombre,
                         "correo": correo,
-                        "contrasena": contrasena
+                        "contrasena": generate_password_hash(contrasena),
                     }).execute()
 
-                    flash("Administrador registrado correctamente.")
-
+                    flash("Administrador registrado correctamente. Ya puedes iniciar sesión.")
                     return redirect(url_for("login"))
 
-            except Exception as e:
-
-                flash(f"Error al registrar: {e}")
+            except Exception as error:
+                app.logger.exception("Error al registrar administrador")
+                flash("No se pudo registrar el administrador. Intenta de nuevo.")
 
     return render_template("registro.html")
+
+
 # ============================================================
-# login
+# LOGIN (SOLO ADMINISTRADOR)
 # ============================================================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("admin_id"):
+        return redirect(url_for("admin"))
 
     if request.method == "POST":
+        correo = request.form.get("txtcorreo", "").strip().lower()
+        contrasena = request.form.get("txtClave", "")
 
-        correo = request.form.get("txtcorreo")
-        contrasena = request.form.get("txtClave")
+        try:
+            resultado = (
+                supabase.table("administrador")
+                .select("id_admin, nombre, contrasena")
+                .eq("correo", correo)
+                .execute()
+                .data
+            )
+        except Exception:
+            app.logger.exception("Error al iniciar sesión")
+            flash("No fue posible iniciar sesión. Intenta de nuevo.")
+            return render_template("login.html")
 
-        admin = (
-            supabase.table("administrador")
-            .select("*")
-            .eq("correo", correo)
-            .eq("contrasena", contrasena)
-            .execute()
-            .data
-        )
+        admin_row = resultado[0] if resultado else None
 
-        if admin:
+        if admin_row and check_password_hash(admin_row["contrasena"], contrasena):
+            session.clear()
+            session["admin_id"] = admin_row["id_admin"]
+            session["admin_nombre"] = admin_row["nombre"]
+            session.permanent = False
 
-            session["admin_id"] = admin[0]["id_admin"]
-            session["admin_nombre"] = admin[0]["nombre"]
-
-            return redirect(url_for("admin"))
+            siguiente = destino_seguro(request.args.get("next"))
+            return redirect(siguiente or url_for("admin"))
 
         flash("Correo o contraseña incorrectos.")
 
-    return render_template("admin.html")
+    return render_template("login.html")
 
 # ============================================================
 # CERRAR SESIÓN
 # ============================================================
 
-@app.route("/logout")
+# @app.route("/logout")
+# def logout():
+
+#     session.clear()
+
+#     flash("Sesión cerrada correctamente.")
+
+#     return redirect(
+#         url_for("login")
+#     )
+
+@app.route("/logout", methods=["POST"])
 def logout():
-
     session.clear()
-
     flash("Sesión cerrada correctamente.")
-
-    return redirect(
-        url_for("login")
-    )
+    return redirect(url_for("home"))
 
 
 # ============================================================
